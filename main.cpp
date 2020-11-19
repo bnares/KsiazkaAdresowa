@@ -150,20 +150,24 @@ vector <Uzytkownicy> rejestrujUzytkownika(vector <Uzytkownicy> dane)
 
 }
 
-bool logowanie(vector <Uzytkownicy> dane)
+int logowanie(vector <Uzytkownicy> dane)
 {
+    string nick,haslo;
     if(dane.size()>0)
     {
 
-
-    string nick, haslo;
-    cin.sync();
-    cout<<"Nick: ";
-    getline(cin,nick);
-    cout<<"Haslo: ";
-    cin.sync();
-    getline(cin, haslo);
+    int liczbaProb =3;
     bool zalogowany = false;
+    while(zalogowany==false)
+    {
+        cin.sync();
+        cout<<"Nick: ";
+        getline(cin,nick);
+        cout<<"Haslo: ";
+        cin.sync();
+        getline(cin, haslo);
+
+
     for(int i =0; i<dane.size(); i++)
     {
         if(dane[i].nick==nick && dane[i].haslo==haslo)
@@ -171,23 +175,29 @@ bool logowanie(vector <Uzytkownicy> dane)
             cout<<"Witaj "<<dane[i].nick<<endl;
             Sleep(1500);
             zalogowany = true;
-            return true;
+            return dane[i].numerID;
             break;
         }
     }
-    if(zalogowany==false)
-    {
         cout<<"Nieprawidlowy login lub haslo"<<endl;
+        liczbaProb--;
+        cout<<"Pozosta³o prob: "<<liczbaProb<<endl;
         Sleep(1600);
-        return false;
+        system("cls");
+        if(liczbaProb==0)
+        {
+            cout<<"Przekroczono liczbe prob"<<endl;
+            Sleep(1500);
+            break;
+            exit(0);
+        }
     }
-
     }
     else
     {
         cout<<"NIe ma zadnego zarejestrowanego uzytkownika"<<endl;
         Sleep(1800);
-        return false;
+        exit(0);
     }
 }
 
@@ -215,7 +225,7 @@ int main()
     cin>>wybor;
     if(wybor=='1')
     {
-        logowanie(daneUzytkownikow);
+        int identyfikatorZalogowanego = logowanie(daneUzytkownikow);
         system("cls");
     }
     if(wybor=='2')
