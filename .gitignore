@@ -6,3 +6,6 @@ Uzytkownicy — kopia.txt
 Uzytkownicy.txt
 kolejnaWersja.depend
 kolejnaWersja.layout
+bin/
+obj/
+kolejnaWersja.cbp
