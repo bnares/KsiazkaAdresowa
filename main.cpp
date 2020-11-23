@@ -702,20 +702,20 @@ void zamienPLikiGLowne(int numerIdAdresata, Adresaci zmienianaOsoba)
             if(adresataId == zmienianaOsoba.idAdresata)
             {
                 adresataTymczasowy<<"\n"<<zmienianaOsoba.idAdresata<<"|"<<zmienianaOsoba.idUzytkownika<<"|"<<zmienianaOsoba.imie<<"|"<<zmienianaOsoba.nazwisko<<"|"<<zmienianaOsoba.telefon<<"|"<<zmienianaOsoba.email<<"|"<<zmienianaOsoba.adres<<"|";
-                //cout<<zmienianaOsoba.idAdresata<<"|"<<zmienianaOsoba.idUzytkownika<<"|"<<zmienianaOsoba.imie<<"|"<<zmienianaOsoba.nazwisko<<"|"<<zmienianaOsoba.telefon<<"|"<<zmienianaOsoba.email<<"|"<<zmienianaOsoba.adres<<"|"<<endl;
+
             }
 
             else
             {
                 adresataTymczasowy<<dane[0]<<"|"<<dane[1]<<"|"<<dane[2]<<"|"<<dane[3]<<"|"<<dane[4]<<"|"<<dane[5]<<"|"<<dane[6]<<"|";
-                //cout<<dane[0]<<"|"<<dane[1]<<"|"<<dane[2]<<"|"<<dane[3]<<"|"<<dane[4]<<"|"<<dane[5]<<"|"<<dane[6]<<"|"<<endl;
+
             }
 
                 licznik=0;
                 dane.clear();
         }
     }
-    //system("pause");
+
     adresat.close();
     adresataTymczasowy.close();
 }
