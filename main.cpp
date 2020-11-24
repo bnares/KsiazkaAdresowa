@@ -23,6 +23,8 @@ struct Adresaci
 
 void zamienPLikiGLowne(int numerIdAdresata, Adresaci zmienianaOsoba);
 
+void zmienNazwePlikuTekstowego(string nowaNazwaPliku, string staraNazwaPLiku);
+
 
 
 
@@ -230,6 +232,8 @@ void menuGlowne()
 
 
 
+
+
 void menuZalogowanego()
 {
     cout<<"KSIAZKA ADRESOWA"<<endl;
@@ -242,6 +246,20 @@ void menuZalogowanego()
     cout<<"7.Zmien haslo"<<endl;
     cout<<"8.Wyloguj sie"<<endl;
 }
+
+
+vector <int> zapisujNumeryIdWierszyZalogowanego(vector <Adresaci> dane)
+{
+    vector <int> listaUzywanychNumerowWierszy;
+    for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
+    {
+        listaUzywanychNumerowWierszy.push_back( it -> idAdresata);
+    }
+    return listaUzywanychNumerowWierszy;
+}
+
+
+
 
 vector <Adresaci> ladowaniePoczatkowDanychZalogowanemu(int numerIDuztkownika)
 {
@@ -569,12 +587,25 @@ void menuEdycjiVectoraAdresta()
 
 vector <Adresaci> wektorowoEdytujAdresta(vector <Adresaci> dane, int numerID)
 {
+    vector <int> uzywaneNumeryWierszy = zapisujNumeryIdWierszyZalogowanego(dane);
+    int wystapienia =0;
+    for(int i = 0; i<uzywaneNumeryWierszy.size(); i++)
+    {
+        if(numerID==uzywaneNumeryWierszy[i])
+        {
+            wystapienia++;
+        }
+    }
+    if(wystapienia>0)
+    {
+
     Adresaci daneAdresataDoPlikuTxt;
     for(vector <Adresaci>::iterator it=dane.begin(); it != dane.end(); it++)
     {
 
         if(it -> idAdresata == numerID)
         {
+
             char wybor;
             menuEdycjiVectoraAdresta();
             cin.sync();
@@ -647,9 +678,20 @@ vector <Adresaci> wektorowoEdytujAdresta(vector <Adresaci> dane, int numerID)
             daneAdresataDoPlikuTxt.email = it -> email;
             daneAdresataDoPlikuTxt.adres = it -> adres;
             zamienPLikiGLowne(numerID, daneAdresataDoPlikuTxt);
+            zmienNazwePlikuTekstowego("Adresaci.txt", "Adresaci_tymczasowy.txt");
+
+            return dane;
+            break;
         }
     }
-    return dane;
+    }
+    else
+    {
+        cout<<"Wybrany numer ID nie jest przypisany temu uzytkownikowi"<<endl;
+        Sleep(1000);
+        return dane;
+    }
+
 }
 
 
@@ -807,7 +849,7 @@ int main()
                 vector <Adresaci> test = bazaDanychZalogowanegoUzytkownika;
                 bazaDanychZalogowanegoUzytkownika = WektorowoUsunAdresata(test, usuwaneIdAdresata);
                 plikBezUsunietegoAdresta(usuwaneIdAdresata);
-                zmienNazwePlikuTekstowego("Adresaci.txt", "Adresaci_tymczasowy.txt");
+                //zmienNazwePlikuTekstowego("Adresaci.txt", "Adresaci_tymczasowy.txt");
                 system("cls");
             }
 
@@ -815,7 +857,7 @@ int main()
             {
                 int edytowaneIdAdresta = wskazNumerIdAdresata();
                 bazaDanychZalogowanegoUzytkownika = wektorowoEdytujAdresta(bazaDanychZalogowanegoUzytkownika, edytowaneIdAdresta);
-                zmienNazwePlikuTekstowego("Adresaci.txt", "Adresaci_tymczasowy.txt");
+                //zmienNazwePlikuTekstowego("Adresaci.txt", "Adresaci_tymczasowy.txt");
                 system("cls");
             }
 
@@ -855,3 +897,4 @@ int main()
 
     return 0;
 }
+
