@@ -849,7 +849,7 @@ int main()
                 vector <Adresaci> test = bazaDanychZalogowanegoUzytkownika;
                 bazaDanychZalogowanegoUzytkownika = WektorowoUsunAdresata(test, usuwaneIdAdresata);
                 plikBezUsunietegoAdresta(usuwaneIdAdresata);
-                //zmienNazwePlikuTekstowego("Adresaci.txt", "Adresaci_tymczasowy.txt");
+                zmienNazwePlikuTekstowego("Adresaci.txt", "Adresaci_tymczasowy.txt");
                 system("cls");
             }
 
