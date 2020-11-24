@@ -186,7 +186,7 @@ int logowanie(vector <Uzytkownicy> dane)
             Sleep(1500);
             zalogowany = true;
             return dane[i].numerID;
-            break;
+            //break;
         }
     }
         cout<<"Nieprawidlowy login lub haslo"<<endl;
@@ -329,8 +329,15 @@ int ostaniNumerAdresata()
 
             }
         }
-        int numery = zamienNaLiczbe(numeryAdresatow[numeryAdresatow.size()-1]);
-        return numery;
+        if(numeryAdresatow.empty()==true)
+        {
+            return 0;
+        }
+        else
+        {
+            int numery = zamienNaLiczbe(numeryAdresatow[numeryAdresatow.size()-1]);
+            return numery;
+        }
     }
     else
     {
@@ -670,6 +677,7 @@ vector <Uzytkownicy> zmienHasloUzytkownika(vector <Uzytkownicy> dane, int numerI
             cin.sync();
             getline(cin, haslo);
             cout<<"zmieniono stare haslo "<<it -> haslo<<" na "<<haslo<<endl;
+            Sleep(1500);
             it -> haslo = haslo;
             return dane;
         }
@@ -743,10 +751,10 @@ int main()
     int numerID = PrzydzielNumerID(daneUzytkownikow);
     cout<<"Liczba Osob w bazie: "<<daneUzytkownikow.size()<<endl;
 
-    char wybor;
     while(true)
     {
 
+    char wybor;
     menuGlowne();
     cin>>wybor;
     if(wybor=='1')
