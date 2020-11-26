@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include<windows.h>
+#include <cstdio>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ struct Adresaci
 
 void zamienPLikiGLowne(int numerIdAdresata, Adresaci zmienianaOsoba);
 
-void zmienNazwePlikuTekstowego(string nowaNazwaPliku, string staraNazwaPLiku);
+void zmienNazwePlikuTekstowego();
 
 
 
@@ -429,7 +430,7 @@ void dodajDoPlikuAdresata(vector <Adresaci> dane)
 {
     fstream mojPlik;
     int indeksOstaniegoAdresata = dane.size()-1;
-    mojPlik.open("Adresaci.txt", ios::out| ios::app);
+    mojPlik.open("Adresaci.txt", ios::out | ios::app);
     mojPlik<<dane[indeksOstaniegoAdresata].idAdresata<<"|"<<dane[indeksOstaniegoAdresata].idUzytkownika<<"|"<<dane[indeksOstaniegoAdresata].imie<<"|"<<dane[indeksOstaniegoAdresata].nazwisko<<"|"<<dane[indeksOstaniegoAdresata].telefon<<"|"<<dane[indeksOstaniegoAdresata].email<<"|"<<dane[indeksOstaniegoAdresata].adres<<"|"<<endl;
     cout<<"Dodano do pliku "<<dane[indeksOstaniegoAdresata].nazwisko<<endl;
     mojPlik.close();
@@ -678,7 +679,7 @@ vector <Adresaci> wektorowoEdytujAdresta(vector <Adresaci> dane, int numerID)
             daneAdresataDoPlikuTxt.email = it -> email;
             daneAdresataDoPlikuTxt.adres = it -> adres;
             zamienPLikiGLowne(numerID, daneAdresataDoPlikuTxt);
-            zmienNazwePlikuTekstowego("Adresaci.txt", "Adresaci_tymczasowy.txt");
+            zmienNazwePlikuTekstowego();
 
             return dane;
             break;
@@ -771,19 +772,11 @@ void zamienPLikiGLowne(int numerIdAdresata, Adresaci zmienianaOsoba)
 }
 
 
-void zmienNazwePlikuTekstowego(string nowaNazwaPliku, string staraNazwaPLiku)
+void zmienNazwePlikuTekstowego()
 {
-    fstream nowyPlik, staryPlik;
-    staryPlik.open(staraNazwaPLiku, ios::in);
-    nowyPlik.open(nowaNazwaPliku, ios::out);
-    string linia;
-    while(getline(staryPlik, linia))
-    {
-        nowyPlik<<linia<<endl;
-    }
-    staryPlik.close();
-    nowyPlik.close();
+    remove("Adresaci.txt");
 
+    rename("Adresaci_tymczasowy.txt", "Adresaci.txt");
 }
 
 
@@ -847,9 +840,31 @@ int main()
             {
                 int usuwaneIdAdresata = wskazNumerIdAdresata();
                 vector <Adresaci> test = bazaDanychZalogowanegoUzytkownika;
-                bazaDanychZalogowanegoUzytkownika = WektorowoUsunAdresata(test, usuwaneIdAdresata);
-                plikBezUsunietegoAdresta(usuwaneIdAdresata);
-                system("cls");
+                vector <int> uzywaneNumeryWierszyPrzezZalogowanego = zapisujNumeryIdWierszyZalogowanego(test);
+                int liczbaPowtorzen =0;
+                for(int i =0; i<uzywaneNumeryWierszyPrzezZalogowanego.size(); i++)
+                {
+                    if(usuwaneIdAdresata==uzywaneNumeryWierszyPrzezZalogowanego[i])
+                    {
+                            liczbaPowtorzen++;
+                    }
+                }
+
+                if(liczbaPowtorzen>0)
+                {
+                    bazaDanychZalogowanegoUzytkownika = WektorowoUsunAdresata(test, usuwaneIdAdresata);
+                    plikBezUsunietegoAdresta(usuwaneIdAdresata);
+                    zmienNazwePlikuTekstowego();
+
+                    system("cls");
+                }
+                else
+                {
+                    cout<<"Nie ma takiego Id w bazie"<<endl;
+                    Sleep(1500);
+                    system("cls");
+                }
+
             }
 
             if(OpcjeZalogowanego=='6')
@@ -892,5 +907,7 @@ int main()
     }
 
     }
+
     return 0;
 }
+
