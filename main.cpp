@@ -8,6 +8,8 @@
 using namespace std;
 
 
+string plikGlowny = "Adresaci.txt";
+string plikPomocniczy = "Adresaci_tymczasowy.txt";
 
 struct Uzytkownicy
 {
@@ -35,6 +37,15 @@ int zamienNaLiczbe(string tekst)
     int liczba;
     ss>>liczba;
     return liczba;
+}
+
+string zamienNaTekst(int liczba)
+{
+    stringstream ss;
+    ss<<liczba;
+    string tekst;
+    ss>>tekst;
+    return tekst;
 }
 
 vector <Uzytkownicy> wczytajDanePliku()
@@ -205,8 +216,9 @@ int logowanie(vector <Uzytkownicy> dane)
             break;
 
         }
+        }
     }
-    }
+
     else
     {
         cout<<"NIe ma zadnego zarejestrowanego uzytkownika"<<endl;
@@ -225,16 +237,6 @@ void menuGlowne()
     cout<<"3-Zamknij program"<<endl;
 }
 
-
-
-
-
-
-
-
-
-
-
 void menuZalogowanego()
 {
     cout<<"KSIAZKA ADRESOWA"<<endl;
@@ -249,15 +251,46 @@ void menuZalogowanego()
 }
 
 
-vector <int> zapisujNumeryIdWierszyZalogowanego(vector <Adresaci> dane)
+
+int ostaniUzytyNumerAdresataPliku()
 {
-    vector <int> listaUzywanychNumerowWierszy;
-    for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
+    fstream mojPlik;
+    vector <string> numeryAdresatow;
+    vector <string> tymczasowy;
+    mojPlik.open(plikGlowny.c_str(),ios::in);
+    if(mojPlik.good())
     {
-        listaUzywanychNumerowWierszy.push_back( it -> idAdresata);
+        string linia;
+        int licznikSlow=1;
+        while(getline(mojPlik,linia, '|'))
+        {
+            tymczasowy.push_back(linia);
+            licznikSlow++;
+            if(licznikSlow==8)
+            {
+                licznikSlow=1;
+                numeryAdresatow.push_back(tymczasowy[0]);
+                tymczasowy.clear();
+
+            }
+        }
+        if(numeryAdresatow.empty()==true)
+        {
+            return 1;
+        }
+        else
+        {
+            int numery = zamienNaLiczbe(numeryAdresatow[numeryAdresatow.size()-1]);
+            return numery+1;
+        }
     }
-    return listaUzywanychNumerowWierszy;
+    else
+    {
+        return 1;
+    }
+    mojPlik.close();
 }
+
 
 
 
@@ -323,135 +356,62 @@ vector <Adresaci> ladowaniePoczatkowDanychZalogowanemu(int numerIDuztkownika)
 
     }
 
-
 }
 
-int ostaniNumerAdresata()
+string wpiszTekstZklawiatury()
 {
-    fstream mojPlik;
-    vector <string> numeryAdresatow;
-    vector <string> tymczasowy;
-    mojPlik.open("Adresaci.txt",ios::in);
-    if(mojPlik.good())
-    {
-        string linia;
-        int licznikSlow=1;
-        while(getline(mojPlik,linia, '|'))
-        {
-            tymczasowy.push_back(linia);
-            licznikSlow++;
-            if(licznikSlow==8)
-            {
-                licznikSlow=1;
-                numeryAdresatow.push_back(tymczasowy[0]);
-                tymczasowy.clear();
-
-            }
-        }
-        if(numeryAdresatow.empty()==true)
-        {
-            return 0;
-        }
-        else
-        {
-            int numery = zamienNaLiczbe(numeryAdresatow[numeryAdresatow.size()-1]);
-            return numery;
-        }
-    }
-    else
-    {
-        return 0;
-    }
-    mojPlik.close();
-}
-
-bool sprawdzCzyNieMaPowtorzen(vector <Adresaci> dane, string imie, string nazwisko)
-{
-  for(int i =0; i<dane.size(); i++)
-  {
-      if(dane[i].imie==imie & dane[i].nazwisko==nazwisko)
-      {
-          cout<<dane[i].nazwisko<<" juz wystepuje w twojej ksiazce adresowej, sprobuj ponownie: "<<endl;
-          Sleep(1500);
-          return false;
-      }
-  }
-  return true;
-}
-
-
-vector <Adresaci> dodajAdresata(vector <Adresaci> dane, int pierwszeWolneIdAdresata, int numerZalogowanego)
-{
-    int idAdresata = pierwszeWolneIdAdresata;
-    int idUzytkownika = numerZalogowanego;
-    string imie, nazwisko,telefon,email,adres;
-    Adresaci daneNowejOsoby;
-
+    string wynik;
     cin.sync();
+    getline(cin, wynik);
+    return wynik;
+}
+
+void dodajAdresataDoWektora(vector <Adresaci> &dane, int &idUzytkownika)
+{
+    Adresaci daneDodawanejOsoby;
+    daneDodawanejOsoby.idAdresata = ostaniUzytyNumerAdresataPliku();
+
     cout<<"Imie: ";
-    getline(cin, imie);
+    daneDodawanejOsoby.imie = wpiszTekstZklawiatury();
     cout<<"Nazwisko: ";
-    cin.sync();
-    getline(cin, nazwisko);
-    while(sprawdzCzyNieMaPowtorzen(dane, imie, nazwisko)==false)
-    {
-
-        cin.sync();
-        cout<<"Imie: ";
-        getline(cin, imie);
-        cout<<"Nazwisko: ";
-        cin.sync();
-        getline(cin, nazwisko);
-        system("cls");
-    }
-    cin.sync();
+    daneDodawanejOsoby.nazwisko = wpiszTekstZklawiatury();
     cout<<"Telefon: ";
-    getline(cin, telefon);
+    daneDodawanejOsoby.telefon = wpiszTekstZklawiatury();
     cout<<"Email: ";
-    cin.sync();
-    getline(cin, email);
+    daneDodawanejOsoby.email = wpiszTekstZklawiatury();
     cout<<"Adres: ";
-    getline(cin, adres);
-    daneNowejOsoby.idAdresata = idAdresata;
-    daneNowejOsoby.idUzytkownika = numerZalogowanego;
-    daneNowejOsoby.imie = imie;
-    daneNowejOsoby.nazwisko = nazwisko;
-    daneNowejOsoby.telefon = telefon;
-    daneNowejOsoby.email = email;
-    daneNowejOsoby.adres = adres;
-    dane.push_back(daneNowejOsoby);
-    cout<<"Dodano: "<<daneNowejOsoby.imie<<" "<<daneNowejOsoby.nazwisko<<endl;
-    Sleep(1500);
-    return dane;
+    daneDodawanejOsoby.adres = wpiszTekstZklawiatury();
+    daneDodawanejOsoby.idUzytkownika = idUzytkownika;
+
+    dane.push_back(daneDodawanejOsoby);
+
+
 }
 
 
-void dodajDoPlikuAdresata(vector <Adresaci> dane)
+void dodajDoPlikuAdresata(vector <Adresaci> &dane)
 {
     fstream mojPlik;
-    int indeksOstaniegoAdresata = dane.size()-1;
-    mojPlik.open("Adresaci.txt", ios::out | ios::app);
-    mojPlik<<dane[indeksOstaniegoAdresata].idAdresata<<"|"<<dane[indeksOstaniegoAdresata].idUzytkownika<<"|"<<dane[indeksOstaniegoAdresata].imie<<"|"<<dane[indeksOstaniegoAdresata].nazwisko<<"|"<<dane[indeksOstaniegoAdresata].telefon<<"|"<<dane[indeksOstaniegoAdresata].email<<"|"<<dane[indeksOstaniegoAdresata].adres<<"|"<<endl;
-    cout<<"Dodano do pliku "<<dane[indeksOstaniegoAdresata].nazwisko<<endl;
+    mojPlik.open(plikGlowny.c_str(), ios::out | ios::app);
+    mojPlik<<dane.back().idAdresata<<"|"<<dane.back().idUzytkownika<<"|"<<dane.back().imie<<"|"<<dane.back().nazwisko<<"|"<<dane.back().telefon<<"|"<<dane.back().email<<"|"<<dane.back().adres<<"|"<<endl;
     mojPlik.close();
 }
 
 
 
-
-void szukajAdresataPoImieniu(vector <Adresaci> dane)
+void szukajAdresataPoImieniu(vector <Adresaci> &dane)
 {
     string imie;
     int wystapienia =0;
     cin.sync();
     cout<<"Podaj imie: ";
-    getline(cin,imie);
-    for(int i =0; i<dane.size(); i++)
+    imie = wpiszTekstZklawiatury();
+    for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
     {
-        if(dane[i].imie==imie)
+        if(it -> imie==imie)
         {
             wystapienia++;
-            cout<<dane[i].idAdresata<<" "<<dane[i].imie<<" "<<dane[i].nazwisko<<" "<<dane[i].telefon<<" "<<dane[i].email<<" "<<dane[i].adres<<endl;
+            cout<<it -> idAdresata<<" "<<it -> imie<<" "<<it -> nazwisko<<" "<<it -> telefon<<" "<<it -> email<<" "<<it -> adres<<endl;
         }
     }
 
@@ -464,19 +424,20 @@ void szukajAdresataPoImieniu(vector <Adresaci> dane)
 }
 
 
-void szukajAdresataPoNazwisku(vector <Adresaci> dane)
+void szukajAdresataPoNazwisku(vector <Adresaci> &dane)
 {
     string nazwisko;
     int wystapienia =0;
     cin.sync();
     cout<<"Podaj nazwisko: ";
-    getline(cin,nazwisko);
-    for(int i =0; i<dane.size(); i++)
+    nazwisko = wpiszTekstZklawiatury();
+
+    for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
     {
-        if(dane[i].nazwisko==nazwisko)
+        if(it -> nazwisko == nazwisko)
         {
             wystapienia++;
-            cout<<dane[i].idAdresata<<" "<<dane[i].imie<<" "<<dane[i].nazwisko<<" "<<dane[i].telefon<<" "<<dane[i].email<<" "<<dane[i].adres<<endl;
+            cout<<it -> idAdresata<<" "<<it -> imie<<" "<<it -> nazwisko<<" "<<it -> telefon<<" "<<it -> email<<" "<<it -> adres<<endl;
         }
     }
 
@@ -488,7 +449,7 @@ void szukajAdresataPoNazwisku(vector <Adresaci> dane)
 
 }
 
-void wyswietlWszystkichAdresatow(vector <Adresaci> dane)
+void wyswietlWszystkichAdresatow(vector <Adresaci> &dane)
 {
     int wystapienia =0;
     for(int i =0; i<dane.size(); i++)
@@ -504,28 +465,28 @@ void wyswietlWszystkichAdresatow(vector <Adresaci> dane)
     system("pause");
 }
 
-int wskazNumerIdAdresata()
+
+
+vector <int> zapisujNumeryIdWierszyZalogowanego(vector <Adresaci> &dane)
 {
-    int wybranyNumerID;
-    string numer;
-    cout<<"Podaj numer ID uzytkownika do usuniecia/edytowania: ";
-    cin.sync();
-    getline(cin, numer);
-    wybranyNumerID = zamienNaLiczbe(numer);
-    return wybranyNumerID;
+    vector <int> listaUzywanychNumerowWierszy;
+    for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
+    {
+        listaUzywanychNumerowWierszy.push_back( it -> idAdresata);
+    }
+    return listaUzywanychNumerowWierszy;
 }
 
 
-
-void plikBezUsunietegoAdresta (int idAdresata)
+void plikBezUsunietegoAdresta (int &idAdresata)
 {
     fstream plikCalyAdresaci;
     fstream pliktymczasowy;
     string linia;
     vector <string> dane;
     int licznik =0;
-    plikCalyAdresaci.open("Adresaci.txt", ios::in);
-    pliktymczasowy.open("Adresaci_tymczasowy.txt", ios::out);
+    plikCalyAdresaci.open(plikGlowny.c_str(), ios::in);
+    pliktymczasowy.open(plikPomocniczy.c_str(), ios::out);
     while(getline(plikCalyAdresaci, linia, '|'))
     {
         dane.push_back(linia);
@@ -535,7 +496,7 @@ void plikBezUsunietegoAdresta (int idAdresata)
             int id = zamienNaLiczbe(dane[0]);
             if(idAdresata != id)
             {
-                pliktymczasowy<<dane[0]<<"|"<<dane[1]<<"|"<<dane[2]<<"|"<<dane[3]<<"|"<<dane[4]<<"|"<<dane[5]<<"|"<<dane[6]<<"|";
+                pliktymczasowy<<dane[0]+"|"+dane[1]+"|"+dane[2]+"|"+dane[3]+"|"+dane[4]+"|"+dane[5]+"|"+dane[6]+"|"<<endl;
             }
                 dane.clear();
                 licznik=0;
@@ -546,32 +507,56 @@ void plikBezUsunietegoAdresta (int idAdresata)
 }
 
 
-vector <Adresaci> WektorowoUsunAdresata (vector <Adresaci> dane, int usuwanyNumerID)
+
+void zmienNazwePlikuTekstowego()
 {
+    remove(plikGlowny.c_str());
 
-    int wystapienia=0;
-    int numerWierszaIdAdresata;
-    for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
-    {
-        if(it -> idAdresata == usuwanyNumerID)
-        {
-            numerWierszaIdAdresata = it -> idAdresata;
-            cout<<"Usuwam: "<<it -> nazwisko<<endl;
-            Sleep(1000);
-            dane.erase(it);
-            wystapienia++;
-            return dane;
-        }
-    }
-
-    if(wystapienia==0)
-    {
-        cout<<"Nie ma Adrestata o ID: "<<usuwanyNumerID<<endl;
-        Sleep(1500);
-        return dane;
-    }
+    rename(plikPomocniczy.c_str(), plikGlowny.c_str());
 }
 
+
+void usuwanieAdresataWektor(vector <Adresaci> &dane, int &numerID)
+{
+    if(! dane.empty())
+    {
+
+    vector <int> uzywaneNumeryIdAdresata = zapisujNumeryIdWierszyZalogowanego(dane);
+    bool czyAdresastIstnieje = false;
+    for(vector <int>::iterator n = uzywaneNumeryIdAdresata.begin(); n != uzywaneNumeryIdAdresata.end(); n++)
+    {
+        if(*n == numerID)
+        {
+            for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
+            {
+                if(it -> idAdresata == numerID)
+                {
+                    czyAdresastIstnieje = true;
+                    cout<<"Usuwam: "<<it -> nazwisko<<endl;
+                    Sleep(1500);
+                    dane.erase(it);
+                    plikBezUsunietegoAdresta(numerID);
+                    zmienNazwePlikuTekstowego();
+                    break;
+
+                }
+            }
+
+        }
+    }
+    if(czyAdresastIstnieje==false)
+    {
+        cout<<"Adresat o takim ID nie istnieje w twojej bazie"<<endl;
+        Sleep(1500);
+    }
+
+    }
+    else
+    {
+        cout<<"Twoja Baza Danych jest pusta"<<endl;
+        Sleep(1500);
+    }
+}
 
 void menuEdycjiVectoraAdresta()
 {
@@ -584,119 +569,144 @@ void menuEdycjiVectoraAdresta()
 
 }
 
-
-
-vector <Adresaci> wektorowoEdytujAdresta(vector <Adresaci> dane, int numerID)
+void zapiszWszystkichAdresatowDoPliku(vector <Adresaci> &dane)
 {
-    vector <int> uzywaneNumeryWierszy = zapisujNumeryIdWierszyZalogowanego(dane);
-    int wystapienia =0;
-    for(int i = 0; i<uzywaneNumeryWierszy.size(); i++)
+    fstream plikAdresaci;
+    string linia="";
+    plikAdresaci.open("lol.txt", ios::out);
+
+    for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
     {
-        if(numerID==uzywaneNumeryWierszy[i])
-        {
-            wystapienia++;
-        }
-    }
-    if(wystapienia>0)
-    {
+        linia += zamienNaTekst(it -> idAdresata) +"|";
+        linia += zamienNaTekst(it -> idUzytkownika)+"|";
+        linia += it -> imie+"|";
+        linia += it -> nazwisko + "|";
+        linia += it -> telefon+"|";
+        linia += it -> email+"|";
+        linia += it -> adres+"|";
 
-    Adresaci daneAdresataDoPlikuTxt;
-    for(vector <Adresaci>::iterator it=dane.begin(); it != dane.end(); it++)
-    {
-
-        if(it -> idAdresata == numerID)
-        {
-
-            char wybor;
-            menuEdycjiVectoraAdresta();
-            cin.sync();
-            cin>>wybor;
-
-            if(wybor=='1')
-            {
-                string imie;
-                cout<<"Podaj nowe imie: ";
-                cin.sync();
-                getline(cin,imie);
-                cout<<"zmieniono imie "<<it -> imie<<" na "<<imie<<endl;
-                Sleep(1500);
-                it -> imie = imie;
-                system("cls");
-            }
-
-            if(wybor=='2')
-            {
-                string nazwisko;
-                cout<<"Podaj nowe nazwisko: ";
-                cin.sync();
-                getline(cin,nazwisko);
-                cout<<"Zamieniono nazwisko "<<it -> nazwisko<<" na "<<nazwisko<<endl;
-                Sleep(1500);
-                it -> nazwisko = nazwisko;
-                system("cls");
-            }
-
-            if(wybor=='3')
-            {
-                string telefon;
-                cout<<"POdaj nowy numer telefonu: ";
-                cin.sync();
-                getline(cin, telefon);
-                cout<<"Zamieniono nr telefonu "<<it -> telefon<<" na "<<telefon<<endl;
-                Sleep(1500);
-                it -> telefon = telefon;
-                system("cls");
-            }
-
-            if(wybor =='4')
-            {
-                string email;
-                cout<<"POdaj nowy email: ";
-                cin.sync();
-                getline(cin, email);
-                cout<<"Zmieniono adres email z: "<<it -> email<<" na "<<email<<endl;
-                Sleep(1500);
-                it -> email = email;
-                system("cls");
-            }
-
-            if(wybor=='5')
-            {
-                string adres;
-                cout<<"Podaj nowy adres: ";
-                cin.sync();
-                getline(cin, adres);
-                cout<<"Zmieniono adres z"<<it -> adres<<" na "<<adres<<endl;
-                Sleep(1500);
-                it -> adres = adres;
-                system("cls");
-            }
-            daneAdresataDoPlikuTxt.idAdresata = it -> idAdresata;
-            daneAdresataDoPlikuTxt.idUzytkownika = it -> idUzytkownika;
-            daneAdresataDoPlikuTxt.imie = it -> imie;
-            daneAdresataDoPlikuTxt.nazwisko = it -> nazwisko;
-            daneAdresataDoPlikuTxt.telefon = it -> telefon;
-            daneAdresataDoPlikuTxt.email = it -> email;
-            daneAdresataDoPlikuTxt.adres = it -> adres;
-            zamienPLikiGLowne(numerID, daneAdresataDoPlikuTxt);
-            zmienNazwePlikuTekstowego();
-
-            return dane;
-            break;
-        }
-    }
-    }
-    else
-    {
-        cout<<"Wybrany numer ID nie jest przypisany temu uzytkownikowi"<<endl;
-        Sleep(1000);
-        return dane;
+        plikAdresaci<<linia<<endl;
+        linia="";
     }
 
 }
 
 
-void zapiszZmianeHaslaDoPliku(vector <Uzytkownicy> dane)
+void zapiszEdytowanegoAdresataDoPlikuPomocniczego(string liniaEdytowanegoAdresata, int idAdresata)
+{
+    fstream calyPlikAdresaci, tymczasowyPlikAdresaci;
+    string linia;
+    calyPlikAdresaci.open(plikGlowny.c_str(), ios::in);
+    tymczasowyPlikAdresaci.open(plikPomocniczy.c_str(), ios::out);
+    vector <string> tymczasowy;
+    int licznik =0;
+    while(getline(calyPlikAdresaci, linia, '|'))
+    {
+        if(linia.size()>0)
+        {
+
+        tymczasowy.push_back(linia);
+        }
+        licznik++;
+        if(licznik==7)
+        {
+            licznik=0;
+            int numerAdresata = zamienNaLiczbe(tymczasowy[0]);
+            if(numerAdresata==idAdresata)
+            {
+                tymczasowyPlikAdresaci<<liniaEdytowanegoAdresata<<endl;
+            }
+            else
+            {
+                string tekst = tymczasowy[0]+"|"+tymczasowy[1]+"|"+tymczasowy[2]+"|"+tymczasowy[3]+"|"+tymczasowy[4]+"|"+tymczasowy[5]+"|"+tymczasowy[6]+"|";
+                tymczasowyPlikAdresaci<< tekst<<endl;
+            }
+            tymczasowy.clear();
+
+        }
+    }
+    tymczasowyPlikAdresaci.close();
+    calyPlikAdresaci.close();
+
+
+}
+
+
+
+void edytujAdresata(vector <Adresaci> &dane, int idAdresata)
+{
+    vector <int> uzywaneNumeryIdAdresata = zapisujNumeryIdWierszyZalogowanego(dane);
+    bool adresatIstnieje = false;
+    int opcja = -2;
+    for(vector <int>::iterator it = uzywaneNumeryIdAdresata.begin(); it != uzywaneNumeryIdAdresata.end(); it++)
+    {
+        if(*it == idAdresata)
+        {
+            cout<<"JESTES TRUE"<<endl;
+            system("pause");
+        adresatIstnieje = true;
+
+        }
+
+    }
+
+    if(adresatIstnieje ==true)
+    {
+        for(vector <Adresaci>::iterator n = dane.begin(); n != dane.end(); n++)
+        {
+            if(n -> idAdresata == idAdresata)
+            {
+                menuEdycjiVectoraAdresta();
+                char wybor;
+                cin.sync();
+                cin>>wybor;
+
+                if(wybor=='1')
+                {
+                    cout<<"Podaj nowe Imie: ";
+                    string imie = wpiszTekstZklawiatury();
+                    n -> imie = imie;
+                }
+                if(wybor=='2')
+                {
+                    cout<<"Podaj nowe Nazwisko: ";
+                    string nazwisko = wpiszTekstZklawiatury();
+                    n -> nazwisko = nazwisko;
+                }
+                if(wybor =='3')
+                {
+                    cout<<"Podaj nowy Telefon: ";
+                    string telefon = wpiszTekstZklawiatury();
+                    n -> telefon = telefon;
+                }
+                if(wybor =='4')
+                {
+                    cout<<"Podaj nowy Email: ";
+                    string email = wpiszTekstZklawiatury();
+                    n -> email = email;
+                }
+                if(wybor=='5')
+                {
+                    cout<<"Podaj nowy Adres: ";
+                    string adres = wpiszTekstZklawiatury();
+                    n -> adres = adres;
+                }
+                string linia = zamienNaTekst( n -> idAdresata)+"|"+zamienNaTekst( n -> idUzytkownika)+"|"+ n -> imie+"|"+ n -> nazwisko+"|"+ n -> telefon+"|"+ n -> email +"|"+ n -> adres+'|';
+                zapiszEdytowanegoAdresataDoPlikuPomocniczego(linia,idAdresata);
+                zmienNazwePlikuTekstowego();
+            }
+        }
+    }
+    if(adresatIstnieje==false)
+    {
+        cout<<"Adresat o takim ID nie istnieje"<<endl;
+        Sleep(1500);
+    }
+
+}
+
+
+void zapiszZmianeHaslaDoPliku(vector <Uzytkownicy> &dane)
 {
     fstream mojPlik;
     mojPlik.open("Uzytkownicy.txt", ios::out);
@@ -709,12 +719,14 @@ void zapiszZmianeHaslaDoPliku(vector <Uzytkownicy> dane)
 
 
 
-vector <Uzytkownicy> zmienHasloUzytkownika(vector <Uzytkownicy> dane, int numerId)
+void zmienHasloUzytkownika(vector <Uzytkownicy> &dane, int numerId)
 {
+    bool nickIstnieje = false;
     for (vector <Uzytkownicy>::iterator it = dane.begin(); it != dane.end(); it++)
     {
         if(it -> numerID == numerId)
         {
+            nickIstnieje = true;
             string haslo;
             cout<<"Podaj nowe haslo:";
             cin.sync();
@@ -725,189 +737,140 @@ vector <Uzytkownicy> zmienHasloUzytkownika(vector <Uzytkownicy> dane, int numerI
             return dane;
         }
     }
+    if(nickIstnieje==false)
+    {
+        cout<<"Uzytkownik o takim ID nie istieje"<<endl;
+        Sleep(1000);
+    }
 }
 
-void zamienPLikiGLowne(int numerIdAdresata, Adresaci zmienianaOsoba)
+
+void usunSpacjePliku()
 {
-    fstream adresat;
-    fstream adresataTymczasowy;
+    fstream aktualnyPlik, nowyPlik;
+
+    aktualnyPlik.open(plikGlowny.c_str(), ios::in);
+    nowyPlik.open(plikPomocniczy.c_str(), ios::out);
     string linia;
-    adresat.open("Adresaci.txt", ios::in);
-    adresataTymczasowy.open("Adresaci_tymczasowy.txt", ios::out);
-    vector <string> dane;
-    if(adresat.good()==false)
+    while(getline(aktualnyPlik, linia))
     {
-        cout<<"Brak takiego pliku..."<<endl;
-    }
-    int licznik =0;
-    while(getline(adresat,linia,'|'))
-    {
-
-        dane.push_back(linia);
-        licznik++;
-        if(licznik==7)
+        if(linia.size()>6)
         {
-            int adresataId = zamienNaLiczbe(dane[0]);
-            int uzytkownikaId = zamienNaLiczbe(dane[1]);
+            nowyPlik<<linia<<endl;
 
-            if(adresataId == zmienianaOsoba.idAdresata)
-            {
-                adresataTymczasowy<<"\n"<<zmienianaOsoba.idAdresata<<"|"<<zmienianaOsoba.idUzytkownika<<"|"<<zmienianaOsoba.imie<<"|"<<zmienianaOsoba.nazwisko<<"|"<<zmienianaOsoba.telefon<<"|"<<zmienianaOsoba.email<<"|"<<zmienianaOsoba.adres<<"|";
-
-            }
-
-            else
-            {
-                adresataTymczasowy<<dane[0]<<"|"<<dane[1]<<"|"<<dane[2]<<"|"<<dane[3]<<"|"<<dane[4]<<"|"<<dane[5]<<"|"<<dane[6]<<"|";
-
-            }
-
-                licznik=0;
-                dane.clear();
         }
+
     }
 
-    adresat.close();
-    adresataTymczasowy.close();
-}
 
+    nowyPlik.close();
+    aktualnyPlik.close();
 
-void zmienNazwePlikuTekstowego()
-{
-    remove("Adresaci.txt");
-
-    rename("Adresaci_tymczasowy.txt", "Adresaci.txt");
 }
 
 
 int main()
 {
-    vector <Uzytkownicy> daneUzytkownikow = wczytajDanePliku();
-    int numerID = PrzydzielNumerID(daneUzytkownikow);
-    cout<<"Liczba Osob w bazie: "<<daneUzytkownikow.size()<<endl;
+    vector <Uzytkownicy> daneZarejestrowanychUzytkownikow = wczytajDanePliku();
 
     while(true)
     {
-
-    char wybor;
-    menuGlowne();
-    cin>>wybor;
-    if(wybor=='1')
-    {
-        int identyfikatorZalogowanego=-1;
-        identyfikatorZalogowanego = logowanie(daneUzytkownikow);
-        int NumerOstatniegoWolnegoRekordu = ostaniNumerAdresata()+1;
-        system("cls");
-        vector <Adresaci> bazaDanychZalogowanegoUzytkownika = ladowaniePoczatkowDanychZalogowanemu(identyfikatorZalogowanego);
-
-
-        while(identyfikatorZalogowanego!=-1)
+        menuGlowne();
+        char wybor;
+        cout<<"Wybierz opcje: ";
+        cin.sync();
+        cin>>wybor;
+        if(wybor=='1')
         {
-
-            char OpcjeZalogowanego;
-            cout<<"Wczytano "<<bazaDanychZalogowanegoUzytkownika.size()<<" pozycji"<<endl;
-            menuZalogowanego();
-            cin.sync();
-            cin>>OpcjeZalogowanego;
-            if(OpcjeZalogowanego=='1')
+            int numerIdZalogowanegoUzytkownika =-1;
+            numerIdZalogowanegoUzytkownika = logowanie(daneZarejestrowanychUzytkownikow);
+            system("cls");
+            vector <Adresaci> dodaniAdresaciZalogowanego = ladowaniePoczatkowDanychZalogowanemu(numerIdZalogowanegoUzytkownika);
+            while(numerIdZalogowanegoUzytkownika != -1)
             {
-                bazaDanychZalogowanegoUzytkownika = dodajAdresata(bazaDanychZalogowanegoUzytkownika, NumerOstatniegoWolnegoRekordu, identyfikatorZalogowanego);
-                dodajDoPlikuAdresata(bazaDanychZalogowanegoUzytkownika);
-                NumerOstatniegoWolnegoRekordu = ostaniNumerAdresata()+1;
-                system("cls");
-
-            }
-
-            if(OpcjeZalogowanego=='2')
-            {
-                szukajAdresataPoImieniu(bazaDanychZalogowanegoUzytkownika);
-                system("cls");
-            }
-
-            if(OpcjeZalogowanego=='3')
-            {
-                szukajAdresataPoNazwisku(bazaDanychZalogowanegoUzytkownika);
-                system("cls");
-            }
-
-            if(OpcjeZalogowanego=='4')
-            {
-                wyswietlWszystkichAdresatow(bazaDanychZalogowanegoUzytkownika);
-                system("cls");
-            }
-
-            if(OpcjeZalogowanego=='5')
-            {
-                int usuwaneIdAdresata = wskazNumerIdAdresata();
-                vector <Adresaci> test = bazaDanychZalogowanegoUzytkownika;
-                vector <int> uzywaneNumeryWierszyPrzezZalogowanego = zapisujNumeryIdWierszyZalogowanego(test);
-                int liczbaPowtorzen =0;
-                for(int i =0; i<uzywaneNumeryWierszyPrzezZalogowanego.size(); i++)
+                cout<<"Liczba dodanych uzytkownikow: "<<dodaniAdresaciZalogowanego.size()<<endl;
+                menuZalogowanego();
+                char wyborOpcjiZalogowanego;
+                cin.sync();
+                cout<<"Wyberz opcje; ";
+                cin>>wyborOpcjiZalogowanego;
+                if(wyborOpcjiZalogowanego=='1')
                 {
-                    if(usuwaneIdAdresata==uzywaneNumeryWierszyPrzezZalogowanego[i])
-                    {
-                            liczbaPowtorzen++;
-                    }
-                }
-
-                if(liczbaPowtorzen>0)
-                {
-                    bazaDanychZalogowanegoUzytkownika = WektorowoUsunAdresata(test, usuwaneIdAdresata);
-                    plikBezUsunietegoAdresta(usuwaneIdAdresata);
-                    zmienNazwePlikuTekstowego();
-
+                    dodajAdresataDoWektora(dodaniAdresaciZalogowanego, numerIdZalogowanegoUzytkownika);
+                    dodajDoPlikuAdresata(dodaniAdresaciZalogowanego);
                     system("cls");
                 }
-                else
+                if(wyborOpcjiZalogowanego=='2')
                 {
-                    cout<<"Nie ma takiego Id w bazie"<<endl;
-                    Sleep(1500);
+                    szukajAdresataPoImieniu(dodaniAdresaciZalogowanego);
                     system("cls");
                 }
 
+                if(wyborOpcjiZalogowanego=='3')
+                {
+                    szukajAdresataPoNazwisku(dodaniAdresaciZalogowanego);
+                    system("cls");
+                }
+
+                if(wyborOpcjiZalogowanego=='4')
+                {
+                    wyswietlWszystkichAdresatow(dodaniAdresaciZalogowanego);
+                    system("cls");
+                }
+                if(wyborOpcjiZalogowanego=='5')
+                {
+                    string liczba;
+                    cout<<"Podaj ID do usuniecia: ";
+                    liczba = wpiszTekstZklawiatury();
+                    int numerID = zamienNaLiczbe(liczba);
+                    usuwanieAdresataWektor(dodaniAdresaciZalogowanego, numerID);
+                    system("cls");
+                }
+                if(wyborOpcjiZalogowanego=='6')
+                {
+                    string liczba;
+                    cout<<"Podaj ID do Edycji: ";
+                    liczba = wpiszTekstZklawiatury();
+                    int numerID = zamienNaLiczbe(liczba);
+                    edytujAdresata(dodaniAdresaciZalogowanego, numerID);
+                    zapiszWszystkichAdresatowDoPliku(dodaniAdresaciZalogowanego);
+                    system("cls");
+                }
+                if(wyborOpcjiZalogowanego=='7')
+                {
+                    zmienHasloUzytkownika(daneZarejestrowanychUzytkownikow, numerIdZalogowanegoUzytkownika);
+                    zapiszZmianeHaslaDoPliku(daneZarejestrowanychUzytkownikow);
+                    system("cls");
+                }
+                if(wyborOpcjiZalogowanego=='8')
+                {
+                    cout<<"Wylogowywanie..."<<endl;
+                    Sleep(1000);
+                    system("cls");
+                    numerIdZalogowanegoUzytkownika = -1;
+                }
+
             }
+                usunSpacjePliku();
+                zmienNazwePlikuTekstowego();
+        }
 
-            if(OpcjeZalogowanego=='6')
-            {
-                int edytowaneIdAdresta = wskazNumerIdAdresata();
-                bazaDanychZalogowanegoUzytkownika = wektorowoEdytujAdresta(bazaDanychZalogowanegoUzytkownika, edytowaneIdAdresta);
-                system("cls");
-            }
+        if(wybor=='2')
+        {
+            daneZarejestrowanychUzytkownikow = rejestrujUzytkownika(daneZarejestrowanychUzytkownikow);
+            dodajDoPLikuUzytkownika(daneZarejestrowanychUzytkownikow);
+            system("cls");
+        }
 
-            if(OpcjeZalogowanego=='7')
-            {
-                identyfikatorZalogowanego = identyfikatorZalogowanego;
-                daneUzytkownikow = zmienHasloUzytkownika(daneUzytkownikow, identyfikatorZalogowanego);
-                zapiszZmianeHaslaDoPliku(daneUzytkownikow);
-                system("cls");
-            }
-
-            if(OpcjeZalogowanego=='8')
-            {
-                cout<<"Wylogowywanie..."<<endl;
-                Sleep(1000);
-                identyfikatorZalogowanego=-1;
-                system("cls");
-
-            }
-
+        if(wybor=='3')
+        {
+            cout<<"Zamukanie programu"<<endl;
+            Sleep(1000);
+            exit(0);
         }
     }
-    if(wybor=='2')
-    {
-        daneUzytkownikow = rejestrujUzytkownika(daneUzytkownikow);
-        numerID = PrzydzielNumerID(daneUzytkownikow);
-        dodajDoPLikuUzytkownika(daneUzytkownikow);
-        system("cls");
-    }
 
-    if(wybor=='3')
-    {
-        exit(0);
-    }
 
-    }
 
     return 0;
 }
-
