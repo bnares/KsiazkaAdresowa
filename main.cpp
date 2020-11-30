@@ -734,7 +734,6 @@ void zmienHasloUzytkownika(vector <Uzytkownicy> &dane, int numerId)
             cout<<"zmieniono stare haslo "<<it -> haslo<<" na "<<haslo<<endl;
             Sleep(1500);
             it -> haslo = haslo;
-            return dane;
         }
     }
     if(nickIstnieje==false)
@@ -742,6 +741,7 @@ void zmienHasloUzytkownika(vector <Uzytkownicy> &dane, int numerId)
         cout<<"Uzytkownik o takim ID nie istieje"<<endl;
         Sleep(1000);
     }
+    return dane;
 }
 
 
@@ -864,7 +864,7 @@ int main()
 
         if(wybor=='3')
         {
-            cout<<"Zamukanie programu"<<endl;
+            cout<<"Zamykanie programu"<<endl;
             Sleep(1000);
             exit(0);
         }
