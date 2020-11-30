@@ -642,8 +642,7 @@ void edytujAdresata(vector <Adresaci> &dane, int idAdresata)
     {
         if(*it == idAdresata)
         {
-            cout<<"JESTES TRUE"<<endl;
-            system("pause");
+
         adresatIstnieje = true;
 
         }
