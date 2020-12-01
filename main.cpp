@@ -740,7 +740,7 @@ void zmienHasloUzytkownika(vector <Uzytkownicy> &dane, int numerId)
         cout<<"Uzytkownik o takim ID nie istieje"<<endl;
         Sleep(1000);
     }
-    return dane;
+    
 }
 
 
