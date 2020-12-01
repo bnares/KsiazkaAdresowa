@@ -573,7 +573,7 @@ void zapiszWszystkichAdresatowDoPliku(vector <Adresaci> &dane)
 {
     fstream plikAdresaci;
     string linia="";
-    plikAdresaci.open("lol.txt", ios::out);
+    plikAdresaci.open(plikPomocniczy.c_str(), ios::out);
 
     for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
     {
