@@ -4,6 +4,7 @@
 #include <sstream>
 #include<windows.h>
 #include <cstdio>
+#include <algorithm>
 
 using namespace std;
 
@@ -27,7 +28,6 @@ struct Adresaci
 void zamienPLikiGLowne(int numerIdAdresata, Adresaci zmienianaOsoba);
 
 void zmienNazwePlikuTekstowego();
-
 
 
 
@@ -200,7 +200,6 @@ int logowanie(vector <Uzytkownicy> dane)
             Sleep(1500);
             zalogowany = true;
             return dane[i].numerID;
-            //break;
         }
     }
         cout<<"Nieprawidlowy login lub haslo"<<endl;
@@ -216,7 +215,7 @@ int logowanie(vector <Uzytkownicy> dane)
             break;
 
         }
-        }
+    }
     }
 
     else
@@ -290,8 +289,6 @@ int ostaniUzytyNumerAdresataPliku()
     }
     mojPlik.close();
 }
-
-
 
 
 
@@ -478,34 +475,36 @@ vector <int> zapisujNumeryIdWierszyZalogowanego(vector <Adresaci> &dane)
 }
 
 
-void plikBezUsunietegoAdresta (int &idAdresata)
+
+int wyciagnijNumerIdAdresataZWiersza(string linia)
 {
-    fstream plikCalyAdresaci;
-    fstream pliktymczasowy;
+        size_t indeks;
+        char przerywnik = '|';
+        indeks = linia.find(przerywnik);
+        int liczba = zamienNaLiczbe(zamienNaTekst(indeks));
+        string numerIdWiersza = linia.substr(0,liczba);
+        return zamienNaLiczbe(numerIdWiersza);
+}
+
+
+
+void plikTyczasowyBezUsunietegoAdresta (int &idAdresata)
+{
+    ifstream plikCalyAdresaci(plikGlowny.c_str());
+    ofstream pliktymczasowy(plikPomocniczy.c_str());
     string linia;
-    vector <string> dane;
-    int licznik =0;
-    plikCalyAdresaci.open(plikGlowny.c_str(), ios::in);
-    pliktymczasowy.open(plikPomocniczy.c_str(), ios::out);
-    while(getline(plikCalyAdresaci, linia, '|'))
+    while(getline(plikCalyAdresaci, linia))
     {
-        dane.push_back(linia);
-        licznik++;
-        if(licznik==7)
+        int aktualnyNumerIdAdresata = wyciagnijNumerIdAdresataZWiersza(linia);
+        if(aktualnyNumerIdAdresata !=idAdresata)
         {
-            int id = zamienNaLiczbe(dane[0]);
-            if(idAdresata != id)
-            {
-                pliktymczasowy<<dane[0]+"|"+dane[1]+"|"+dane[2]+"|"+dane[3]+"|"+dane[4]+"|"+dane[5]+"|"+dane[6]+"|"<<endl;
-            }
-                dane.clear();
-                licznik=0;
+            pliktymczasowy<<linia<<endl;
         }
     }
+
     plikCalyAdresaci.close();
     pliktymczasowy.close();
 }
-
 
 
 void zmienNazwePlikuTekstowego()
@@ -514,6 +513,8 @@ void zmienNazwePlikuTekstowego()
 
     rename(plikPomocniczy.c_str(), plikGlowny.c_str());
 }
+
+
 
 
 void usuwanieAdresataWektor(vector <Adresaci> &dane, int &numerID)
@@ -535,7 +536,7 @@ void usuwanieAdresataWektor(vector <Adresaci> &dane, int &numerID)
                     cout<<"Usuwam: "<<it -> nazwisko<<endl;
                     Sleep(1500);
                     dane.erase(it);
-                    plikBezUsunietegoAdresta(numerID);
+                    plikTyczasowyBezUsunietegoAdresta(numerID);
                     zmienNazwePlikuTekstowego();
                     break;
 
@@ -569,66 +570,41 @@ void menuEdycjiVectoraAdresta()
 
 }
 
-void zapiszWszystkichAdresatowDoPliku(vector <Adresaci> &dane)
+
+
+void zapiszEdytowanychAdresatowZalogowanegoINieZalogowanychDoPlikuPomocniczego(string liniaEdytowanegoAdresata, int idAdresata)
 {
-    fstream plikAdresaci;
-    string linia="";
-    plikAdresaci.open(plikPomocniczy.c_str(), ios::out);
-
-    for(vector <Adresaci>::iterator it = dane.begin(); it != dane.end(); it++)
-    {
-        linia += zamienNaTekst(it -> idAdresata) +"|";
-        linia += zamienNaTekst(it -> idUzytkownika)+"|";
-        linia += it -> imie+"|";
-        linia += it -> nazwisko + "|";
-        linia += it -> telefon+"|";
-        linia += it -> email+"|";
-        linia += it -> adres+"|";
-
-        plikAdresaci<<linia<<endl;
-        linia="";
-    }
-
-}
-
-
-void zapiszEdytowanegoAdresataDoPlikuPomocniczego(string liniaEdytowanegoAdresata, int idAdresata)
-{
-    fstream calyPlikAdresaci, tymczasowyPlikAdresaci;
+    ifstream calyPlikAdresaci(plikGlowny.c_str());
+    ofstream tymczasowyPlikAdresaci(plikPomocniczy.c_str());
     string linia;
-    calyPlikAdresaci.open(plikGlowny.c_str(), ios::in);
-    tymczasowyPlikAdresaci.open(plikPomocniczy.c_str(), ios::out);
-    vector <string> tymczasowy;
-    int licznik =0;
-    while(getline(calyPlikAdresaci, linia, '|'))
+
+
+    if(calyPlikAdresaci.good())
     {
-        if(linia.size()>0)
-        {
+    while(getline(calyPlikAdresaci,linia))
+    {
 
-        tymczasowy.push_back(linia);
-        }
-        licznik++;
-        if(licznik==7)
+        int numerIdWiersza = wyciagnijNumerIdAdresataZWiersza(linia);
+
+
+        if(numerIdWiersza == idAdresata)
         {
-            licznik=0;
-            int numerAdresata = zamienNaLiczbe(tymczasowy[0]);
-            if(numerAdresata==idAdresata)
-            {
-                tymczasowyPlikAdresaci<<liniaEdytowanegoAdresata<<endl;
-            }
-            else
-            {
-                string tekst = tymczasowy[0]+"|"+tymczasowy[1]+"|"+tymczasowy[2]+"|"+tymczasowy[3]+"|"+tymczasowy[4]+"|"+tymczasowy[5]+"|"+tymczasowy[6]+"|";
-                tymczasowyPlikAdresaci<< tekst<<endl;
-            }
-            tymczasowy.clear();
+            tymczasowyPlikAdresaci<<liniaEdytowanegoAdresata<<endl;
 
         }
+
+        else
+        {
+            tymczasowyPlikAdresaci<<linia<<endl;
+
+        }
+
     }
+
+    }
+
     tymczasowyPlikAdresaci.close();
     calyPlikAdresaci.close();
-
-
 }
 
 
@@ -642,11 +618,8 @@ void edytujAdresata(vector <Adresaci> &dane, int idAdresata)
     {
         if(*it == idAdresata)
         {
-
         adresatIstnieje = true;
-
         }
-
     }
 
     if(adresatIstnieje ==true)
@@ -691,8 +664,9 @@ void edytujAdresata(vector <Adresaci> &dane, int idAdresata)
                     n -> adres = adres;
                 }
                 string linia = zamienNaTekst( n -> idAdresata)+"|"+zamienNaTekst( n -> idUzytkownika)+"|"+ n -> imie+"|"+ n -> nazwisko+"|"+ n -> telefon+"|"+ n -> email +"|"+ n -> adres+'|';
-                zapiszEdytowanegoAdresataDoPlikuPomocniczego(linia,idAdresata);
+                zapiszEdytowanychAdresatowZalogowanegoINieZalogowanychDoPlikuPomocniczego(linia,idAdresata);
                 zmienNazwePlikuTekstowego();
+                linia="";
             }
         }
     }
@@ -740,32 +714,9 @@ void zmienHasloUzytkownika(vector <Uzytkownicy> &dane, int numerId)
         cout<<"Uzytkownik o takim ID nie istieje"<<endl;
         Sleep(1000);
     }
-    
-}
-
-
-void usunSpacjePliku()
-{
-    fstream aktualnyPlik, nowyPlik;
-
-    aktualnyPlik.open(plikGlowny.c_str(), ios::in);
-    nowyPlik.open(plikPomocniczy.c_str(), ios::out);
-    string linia;
-    while(getline(aktualnyPlik, linia))
-    {
-        if(linia.size()>6)
-        {
-            nowyPlik<<linia<<endl;
-
-        }
-
-    }
-
-
-    nowyPlik.close();
-    aktualnyPlik.close();
 
 }
+
 
 
 int main()
@@ -832,7 +783,6 @@ int main()
                     liczba = wpiszTekstZklawiatury();
                     int numerID = zamienNaLiczbe(liczba);
                     edytujAdresata(dodaniAdresaciZalogowanego, numerID);
-                    zapiszWszystkichAdresatowDoPliku(dodaniAdresaciZalogowanego);
                     system("cls");
                 }
                 if(wyborOpcjiZalogowanego=='7')
@@ -850,8 +800,7 @@ int main()
                 }
 
             }
-                usunSpacjePliku();
-                zmienNazwePlikuTekstowego();
+
         }
 
         if(wybor=='2')
@@ -869,7 +818,6 @@ int main()
         }
     }
 
-
-
     return 0;
 }
+
